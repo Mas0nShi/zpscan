@@ -21,6 +21,7 @@ type CommonOptions struct {
 
 	OutputFile string
 	ResultFile string
+	ConfigFile string
 
 	NoColor bool
 	Debug   bool
@@ -74,6 +75,15 @@ func (o *CommonOptions) configureOutput() {
 
 // configureOptions 配置选项
 func (o *CommonOptions) configureOptions() error {
+	// 如果指定了配置文件路径，则重新加载配置
+	if o.ConfigFile != "" {
+		config.SetConfigFile(o.ConfigFile)
+		if err := config.LoadConfig(); err != nil {
+			return fmt.Errorf("failed to load config file %s: %v", o.ConfigFile, err)
+		}
+		gologger.Info().Msgf("Loaded config from: %s", o.ConfigFile)
+	}
+
 	if o.Input != "" {
 		targets = append(targets, o.Input)
 	} else {
@@ -100,6 +110,7 @@ func Execute() {
 
 	rootCmd.PersistentFlags().StringVar(&commonOptions.ResultFile, "result", "", "output file to write found results")
 	rootCmd.PersistentFlags().StringVarP(&commonOptions.OutputFile, "output", "o", "result.txt", "output file to write log and results")
+	rootCmd.PersistentFlags().StringVarP(&commonOptions.ConfigFile, "config", "c", "", "config file path (default: config.yaml)")
 
 	rootCmd.PersistentFlags().BoolVar(&commonOptions.NoColor, "no-color", false, "disable colors in output")
 	rootCmd.PersistentFlags().BoolVar(&commonOptions.Debug, "debug", false, "show debug output")

@@ -88,14 +88,30 @@ type Expscan struct {
 
 var Worker Config
 
-const configFile = "config.yaml"
+const defaultConfigFile = "config.yaml"
 
-func init() {
+var configFile = defaultConfigFile
+
+func SetConfigFile(path string) {
+	if path != "" {
+		configFile = path
+	}
+}
+
+func LoadConfig() error {
 	bytes, err := utils.ReadFile(configFile)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	err = yaml.Unmarshal(bytes, &Worker)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func init() {
+	err := LoadConfig()
 	if err != nil {
 		log.Fatal(err)
 	}
